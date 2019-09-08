@@ -1,34 +1,4 @@
-/**
- * A generic representation of a function exposing more type information than
- * the built-in `Function` type, allowing extraction of its input param types
- */
-interface Fn extends Function {
-  <A extends unknown[]>(...args: A): unknown
-  <A>(...args: A[]): unknown
-}
-
-/**
- * A type-level utility to get the type of the tail of a tuple of functions
- */
-type Tail<Fns extends Fn[]> = (
-  ...fns: Fns
-) => unknown extends <A>(a: A, ...rest: infer Rest) => unknown ? Rest : never
-
-/**
- * A type-level utility to get the type of the last function from a tuple of
- * functions
- */
-type Last<Fns extends Fn[]> = Fns['length'] extends 0
-  ? never
-  : Fns[Tail<Fns>['length']]
-
-/**
- * A type-level utility to get the return type of the composition of a tuple of
- * functions
- */
-type Composed<Fns extends Fn[]> = (
-  ...args: Parameters<Last<Fns>>
-) => ReturnType<Fns[0]>
+import { F } from 'ts-toolbelt'
 
 /**
  * Composes single-argument functions from right to left. The rightmost
@@ -40,90 +10,9 @@ type Composed<Fns extends Fn[]> = (
  *   to left. For example, `compose(f, g, h)` is identical to doing
  *   `(...args) => f(g(h(...args)))`.
  */
-// when given no args and no generic type params, infer args as tuple
-export default function compose(): <A extends unknown[]>(...a: A) => A[0]
-// allow specifying type param of args tuple
-export default function compose<A extends unknown[]>(): (...a: A) => A[0]
-// when given a single function, just return that function
-export default function compose<A extends unknown[], B>(
-  fab: (...args: A) => B
-): (...args: A) => B
-// standard case, given 2 functions
-export default function compose<A extends unknown[], B, C>(
-  fbc: (b: B) => C,
-  fab: (...args: A) => B
-): (...args: A) => C
-// standard case, given 3 functions
-export default function compose<A extends unknown[], B, C, D>(
-  fcd: (c: C) => D,
-  fbc: (b: B) => C,
-  fab: (...args: A) => B
-): (...args: A) => D
-// standard case, given 4 functions
-export default function compose<A extends unknown[], B, C, D, E>(
-  fde: (d: D) => E,
-  fcd: (c: C) => D,
-  fbc: (b: B) => C,
-  fab: (...args: A) => B
-): (...args: A) => E
-// standard case, given 5 functions
-export default function compose<A extends unknown[], B, C, D, E, F>(
-  fef: (e: E) => F,
-  fde: (d: D) => E,
-  fcd: (c: C) => D,
-  fbc: (b: B) => C,
-  fab: (...args: A) => B
-): (...args: A) => F
-// extra overloads allowing functions other than the right-most function
-// to take in more than one argument, though the extra arguments go unused
-// 2 multi-arg functions
-export default function compose<A extends unknown[], B extends unknown[], C>(
-  fbc: (...b: B) => C,
-  fab: (...args: A) => B[0]
-): (...args: A) => C
-// 3 multi-arg functions
-export default function compose<
-  A extends unknown[],
-  B extends unknown[],
-  C extends unknown[],
-  D
->(
-  fcd: (...c: C) => D,
-  fbc: (...b: B) => C[0],
-  fab: (...args: A) => B[0]
-): (...args: A) => D
-// 4 multi-arg functions
-export default function compose<
-  A extends unknown[],
-  B extends unknown[],
-  C extends unknown[],
-  D extends unknown[],
-  E
->(
-  fde: (...d: D) => E,
-  fcd: (...c: C) => D[0],
-  fbc: (...b: B) => C[0],
-  fab: (...args: A) => B[0]
-): (...args: A) => E
-// 5 multi-arg functions
-export default function compose<
-  A extends unknown[],
-  B extends unknown[],
-  C extends unknown[],
-  D extends unknown[],
-  E extends unknown[],
-  F
->(
-  fef: (...e: E) => F,
-  fde: (...d: D) => E[0],
-  fcd: (...c: C) => D[0],
-  fbc: (...b: B) => C[0],
-  fab: (...args: A) => B[0]
-): (...args: A) => F
-// generic type signature for any number of functions
-export default function compose<Fns extends Fn[]>(...funcs: Fns): Composed<Fns>
-// generic base case type signature and function body implementation
-export default function compose<Fns extends Fn[]>(...fns: Fns): Fn {
+export default function compose<Fns extends F.Function[]>(
+  ...fns: Fns
+): F.Compose<Fns> {
   const len = fns.length
 
   if (len === 0) {
