@@ -56,8 +56,12 @@ describe('Utils', () => {
 
     it('throws at runtime if argument is not a function', () => {
       type sFunc = (x: number, y: number) => number
-      const square = (x: number, _: number) => x * x
-      const add = (x: number, y: number) => x + y
+      // const square = (x: number, _: number) => x * x
+      // changed to work with F.Composer & F.Compose
+      const square = (x: number) => x * x
+      // const add = (x: number, y: number) => x + y
+      // changed to work with F.Composer & F.Compose
+      const add = (x: number) => x + x
 
       expect(() =>
         compose(
